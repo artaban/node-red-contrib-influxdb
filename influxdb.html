@@ -87,23 +87,27 @@
             <div class="form-row">
                 <label for="node-input-precision" style="width:35%"><i class="fa fa-clock-o"></i> <span data-i18n="influxdb.label.time-precision"></span></label>
                 <select type="text" id="node-input-precision" style="width:55%">
-                    <option value="">Default</option> 
-                    <option value="n">Nanoseconds (n)</option> 
-                    <option value="u">Microseconds (u)</option> 
-                    <option value="ms">Milliseconds (ms)</option> 
+                    <option value="">Default</option>
+                    <option value="n">Nanoseconds (n)</option>
+                    <option value="u">Microseconds (u)</option>
+                    <option value="ms">Milliseconds (ms)</option>
                     <option value="s">Seconds (s)</option>
                     <option value="m">Minute (m)</option>
                     <option value="h">Hour (h)</option>
                     <option value="d">Day (d)</option>
                     <option value="w">Week (w)</option>
-                </select>  
+                </select>
             </div>
             <div class="form-row">
                 <label for="node-input-retentionPolicy" style="width:35%"><i class="fa fa-gavel"></i> <span data-i18n="influxdb.label.retention-policy"></span></label>
                 <input type="text" style="width:55%" id="node-input-retentionPolicy">
             </div>
-        </div>  
-    </div>  
+            <div class="form-row">
+                <label for="node-input-schemaFields" style="width:35%"><i class="fa fa-file-code-o"></i> <span data-i18n="influxdb.label.schema-fields"></span></label>
+                <input type="text" id="node-input-schemaFields" style="width:55%">
+            </div>
+        </div>
+    </div>
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="node-red:common.label.name"></span></label>
         <input type="text" id="node-input-name" data-i18n="[placeholder]node-red:common.label.name">
@@ -113,17 +117,17 @@
 
 <script type="text/x-red" data-help-name="influxdb out">
     <p>A simple influxdb output node to write values and tags to an influxdb measurement.</p>
-    <p>The fields and tags to write are in <b>msg.payload</b>.  If <b>msg.payload</b> is a string, number, or boolean, 
+    <p>The fields and tags to write are in <b>msg.payload</b>.  If <b>msg.payload</b> is a string, number, or boolean,
     it will be written as a single value to the specified measurement (called <i>value</i>).</p>
     <p>If <b>msg.payload</b> is an object containing multiple properties, the fields will be written to the measurement.</p>
-    <p>If <b>msg.payload</b> is an array containing two objects, the first object will be written as the set of named fields, 
+    <p>If <b>msg.payload</b> is an array containing two objects, the first object will be written as the set of named fields,
     the second is the set of named tags.</p>
     <p>Finally, if <b>msg.payload</b> is an array of arrays, it will be written as a series of points containing fields and tags.</p>
-    <p>If the <i>measurement</i> field is not set in the node configuration, the user can send in data with a specified 
+    <p>If the <i>measurement</i> field is not set in the node configuration, the user can send in data with a specified
     measurement name in <b>msg.measurement</b> to overwrite the <i>measurement</i> field in the configuration of the node.</p>
     <p>Check <i>Advanced Query Options</i> to specify a time precision and retention policy for the insertion.<p>
-    <p>The advanced query options <i>Time Precision</i> and <i>Retention Policy</i> can be overwritten using 
-    message properties <b>msg.precision</b> and <b>msg.retentionPolicy</b>.</p> 
+    <p>The advanced query options <i>Time Precision</i> and <i>Retention Policy</i> can be overwritten using
+    message properties <b>msg.precision</b> and <b>msg.retentionPolicy</b>.</p>
 </script>
 
 <script type="text/javascript">
@@ -135,7 +139,8 @@
             name: {value: ""},
             measurement: {value: ""},
             precision: {value: ""},
-            retentionPolicy: {value: ""}
+            retentionPolicy: {value: ""},
+            schemaFields: {value: ""}
         },
         inputs: 1,
         outputs: 0,
@@ -167,18 +172,22 @@
 
             // show advanced options if a query option is set on startup
             if (($('#node-input-precision').val() === "")
-                    && ($('#node-input-retentionPolicy').val() === "")) {
+                    && ($('#node-input-retentionPolicy').val() === "")
+                    && ($('#node-input-schemaFields').val() === "")) {
                 $("#advanced-options-div").hide();
             } else {
                 $('#advanced-options-checkbox').prop('checked', true);
                 $("#advanced-options-div").show();
             }
+
+            $('#node-input-schemaFields').typedInput({types:['json']});
         },
         oneditsave: function() {
             // reset inputs if we are not using advanced options
             if (!$("#advanced-options-checkbox").is(':checked')) {
                 $("#node-input-precision").val("");
                 $("#node-input-retentionPolicy").val("");
+                $("#node-input-schemaFields").val("");
             }
         }
     });
@@ -196,22 +205,22 @@
             <div class="form-row">
                 <label for="node-input-precision" style="width:35%"><i class="fa fa-clock-o"></i> <span data-i18n="influxdb.label.time-precision"></span></label>
                 <select type="text" id="node-input-precision" style="width:55%">
-                    <option value="">Default</option> 
-                    <option value="n">Nanoseconds (n)</option> 
-                    <option value="u">Microseconds (u)</option> 
-                    <option value="ms">Milliseconds (ms)</option> 
+                    <option value="">Default</option>
+                    <option value="n">Nanoseconds (n)</option>
+                    <option value="u">Microseconds (u)</option>
+                    <option value="ms">Milliseconds (ms)</option>
                     <option value="s">Seconds (s)</option>
                     <option value="m">Minute (m)</option>
                     <option value="h">Hour (h)</option>
                     <option value="d">Day (d)</option>
                     <option value="w">Week (w)</option>
-                </select>  
+                </select>
             </div>
             <div class="form-row">
                 <label for="node-input-retentionPolicy" style="width:35%"><i class="fa fa-gavel"></i> <span data-i18n="influxdb.label.retention-policy"></span></label>
                 <input type="text" style="width:55%" id="node-input-retentionPolicy">
             </div>
-        </div>  
+        </div>
     </div>
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="node-red:common.label.name"></span></label>
@@ -227,8 +236,8 @@
     fields of the point.  If supplied, the <b>tags</b> property will contain the tags for the point.  To set the time
     for the point, supply a <b>timestamp</b> property.</p>
     <p>Check <i>Advanced Query Options</i> to specify a time precision and retention policy for the insertion.<p>
-    <p>The advanced query options <i>Time Precision</i> and <i>Retention Policy</i> can be overwritten using 
-    message properties <b>msg.precision</b> and <b>msg.retentionPolicy</b>.</p>  
+    <p>The advanced query options <i>Time Precision</i> and <i>Retention Policy</i> can be overwritten using
+    message properties <b>msg.precision</b> and <b>msg.retentionPolicy</b>.</p>
 </script>
 
 <script type="text/javascript">
@@ -292,7 +301,7 @@
     </div>
     <div class="form-row">
         <input type="checkbox" id="node-input-rawOutput" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-rawOutput"><span data-i18n="influxdb.label.use-raw-output"></span></label>        
+        <label for="node-input-rawOutput"><span data-i18n="influxdb.label.use-raw-output"></span></label>
     </div>
     <div class="form-row">
         <input type="checkbox" id="advanced-options-checkbox" style="display: inline-block; width: auto; vertical-align: top;">
@@ -301,24 +310,24 @@
             <div class="form-row">
                 <label for="node-input-precision" style="width:35%"><i class="fa fa-clock-o"></i> <span data-i18n="influxdb.label.time-precision"></span></label>
                 <select type="text" id="node-input-precision" style="width:55%">
-                    <option value="">Default</option> 
-                    <option value="n">Nanoseconds (n)</option> 
-                    <option value="u">Microseconds (u)</option> 
-                    <option value="ms">Milliseconds (ms)</option> 
+                    <option value="">Default</option>
+                    <option value="n">Nanoseconds (n)</option>
+                    <option value="u">Microseconds (u)</option>
+                    <option value="ms">Milliseconds (ms)</option>
                     <option value="s">Seconds (s)</option>
                     <option value="m">Minute (m)</option>
                     <option value="h">Hour (h)</option>
                     <option value="d">Day (d)</option>
                     <option value="w">Week (w)</option>
-                </select>  
+                </select>
             </div>
             <div class="form-row">
                 <label for="node-input-retentionPolicy" style="width:35%"><i class="fa fa-gavel"></i> <span data-i18n="influxdb.label.retention-policy"></span></label>
                 <input type="text" style="width:55%" id="node-input-retentionPolicy">
             </div>
-        </div>  
+        </div>
     </div>
-  
+
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="node-red:common.label.name"></span></label>
         <input type="text" id="node-input-name" data-i18n="[placeholder]node-red:common.label.name">
@@ -334,8 +343,8 @@
     check the <i>Raw Output</i> checkbox.</p>
     <p>Check <i>Advanced Query Options</i> to specify a time precision and retention policy for the query.<p>
     <p>The raw output configuration can be overwritten by the message property <b>msg.rawOutput</b>. </p>
-    <p>The advanced query options <i>Time Precision</i> and <i>Retention Policy</i> can be overwritten using 
-    message properties <b>msg.precision</b> and <b>msg.retentionPolicy</b>.</p>  
+    <p>The advanced query options <i>Time Precision</i> and <i>Retention Policy</i> can be overwritten using
+    message properties <b>msg.precision</b> and <b>msg.retentionPolicy</b>.</p>
 </script>
 
 <script type="text/javascript">

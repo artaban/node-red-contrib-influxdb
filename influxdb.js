@@ -46,12 +46,13 @@ module.exports = function(RED) {
         this.influxdb = n.influxdb;
         this.precision = n.precision;
         this.retentionPolicy = n.retentionPolicy;
+        this.schemaFields = n.schemaFields;
         this.influxdbConfig = RED.nodes.getNode(this.influxdb);
 
         if (this.influxdbConfig) {
             var node = this;
-            var client = new Influx.InfluxDB({
-                hosts: [ {
+            var influxDBConfig = {
+                hosts: [{
                     host: this.influxdbConfig.hostname,
                     port: this.influxdbConfig.port,
                     protocol: this.influxdbConfig.usetls ? "https" : "http",
@@ -61,7 +62,18 @@ module.exports = function(RED) {
                 database: this.influxdbConfig.database,
                 username: this.influxdbConfig.credentials.username,
                 password: this.influxdbConfig.credentials.password
-            });
+            };
+            if (this.schemaFields.length > 0) {
+                influxDBConfig.schema = [
+                    {
+                        measurement: node.measurement,
+                        fields: JSON.parse(this.schemaFields),
+                        tags: []
+                    }
+                ];
+            }
+
+            var client = new Influx.InfluxDB(influxDBConfig);
 
             node.on("input",function(msg) {
                 var measurement;
@@ -69,7 +81,7 @@ module.exports = function(RED) {
                 var measurement = msg.hasOwnProperty('measurement') ? msg.measurement : node.measurement;
                 if (!measurement) {
                     node.error(RED._("influxdb.errors.nomeasurement"),msg);
-                    return;                
+                    return;
                 }
                 var precision = msg.hasOwnProperty('precision') ? msg.precision : node.precision;
                 var retentionPolicy = msg.hasOwnProperty('retentionPolicy') ? msg.retentionPolicy : node.retentionPolicy;
@@ -81,7 +93,7 @@ module.exports = function(RED) {
                 if (retentionPolicy) {
                     writeOptions.retentionPolicy = retentionPolicy;
                 }
-                
+
                 // format payload to match new writePoints API
                 var points = [];
                 var point;
@@ -230,7 +242,7 @@ module.exports = function(RED) {
                 query = msg.hasOwnProperty('query') ? msg.query : node.query;
                 if (!query) {
                     node.error(RED._("influxdb.errors.noquery"), msg);
-                    return;                  
+                    return;
                 }
 
                 rawOutput = msg.hasOwnProperty('rawOutput') ? msg.rawOutput : node.rawOutput;

@@ -5,6 +5,7 @@
             "port": "Port",
             "database": "Database",
             "measurement":"Measurement",
+            "schema-fields": "Schema Fields",
             "server":"Server",
             "query":"Query",
             "use-tls": "Enable secure (SSL/TLS) connection",
